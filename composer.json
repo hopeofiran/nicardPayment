@@ -1,0 +1,33 @@
+{
+  "name": "hopeofiran/nicardpayment",
+  "type": "library",
+  "description": "You can make your Nick Card payments with this package.",
+  "keywords": ["payment", "nicard", "nicard-payment", "nicardPayment", "nicard payment"],
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "require": {
+    "PHP": "^7.3"
+  },
+  "authors": [
+    {
+      "name": "Omid Mehri",
+      "email": "thehopeofiran@gmail.com",
+      "homepage": "https://github.com/hopeofiran/"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "HopeOfIran\\ParsianRefund\\Providers\\ParsianRefundProvider"
+      ]
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "HopeOfIran\\NicardPayment\\": "src"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
