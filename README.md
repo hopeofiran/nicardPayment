@@ -36,16 +36,8 @@ return \HopeOfIran\NicardPayment\Facades\NicardPaymentFacade::creditAmount(20000
         ->callbackUrl(\route('payment.verification'))
         ->backUrl(\route('payment.verification'))
         ->installmentsCountList([3, 4])
-        ->purchase(function (\HopeOfIran\NicardPayment\NicardPayment $nicardPayment, \Illuminate\Http\Client\Response $response) {
-            if ($response->collect()->has('data')) {
-                $paymentUrl = $response->collect('data')['open_cpg_url'];
-                return $nicardPayment->pay($paymentUrl);
-            }
-            if ($response->failed()) {
-                return $response->collect('errors')->each(function (array $error) {
-                    return $error;
-                });
-            }
+        ->purchase(function (\HopeOfIran\NicardPayment\NicardPayment $nicardPayment, \Illuminate\Http\Client\Response $response, $data) {
+            return $nicardPayment->pay($data['open_cpg_url']);
             return 'payment failed';
         });
 })->name('payment');
