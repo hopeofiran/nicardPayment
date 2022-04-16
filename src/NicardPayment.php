@@ -3,39 +3,46 @@
 namespace HopeOfIran\NicardPayment;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redirect;
 
 class NicardPayment
 {
     /**
      * @var object $config
      */
-    public $config;
+    public $config = [];
+
     /**
      * @var int
      */
     private $cashAmount = 0;
+
     /**
      * @var int
      */
     private $creditAmount = 0;
+
     /**
      * @var string $token
      */
     private $token = null;
 
     /**
+     * @var string $token
+     */
+    private $url = null;
+
+    /**
      * NicardPayment constructor.
      *
      * @param  array  $config
+     *
+     * @throws \Exception
      */
     public function __construct(array $config = [])
     {
         $this->config = empty($config) ? $this->loadDefaultConfig() : $config;
-        try {
-            $this->getToken();
-        } catch (\Exception $e) {
-            logs()->error('NicardPaymentGrtTokenFailed', ['message', $e->getMessage()]);
-        }
+        $this->getToken();
     }
 
     /**
@@ -140,8 +147,8 @@ class NicardPayment
     protected function httpRequest()
     {
         return Http::baseUrl($this->config['baseUrl'])->withHeaders([
-                'Authorization' => 'Bearer ' . $this->token,
-            ]);
+            'Authorization' => 'Bearer ' . $this->token,
+        ]);
     }
 
     /**
@@ -200,8 +207,13 @@ class NicardPayment
             "smart_ipg_password"      => $this->config['password'],
             "smart_ipg_service_id"    => $this->config['serviceId'],
         ]);
+        if ($response->failed()) {
+            throw new \Exception($response->collect()->toJson());
+            return false;
+        }
+        $this->url = $response->collect('data')['open_cpg_url'];
         if ($finalizeCallback) {
-            return call_user_func($finalizeCallback, $this, $response);
+            return call_user_func($finalizeCallback, $this, $response, $response->json('data'));
         }
         return $response;
     }
@@ -211,9 +223,12 @@ class NicardPayment
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function pay(string $url)
+    public function pay(string $url = null)
     {
-        return redirect()->to($url);
+        if ($url == null) {
+            $url = $this->url;
+        }
+        return Redirect::to($url);
     }
 
     /**
